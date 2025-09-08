@@ -1,1 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoVision - Sustainable Living Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #0d1b2a; /* Dark blue */
+            min-height: 100vh;
+            color: #e0e1dd; /* Light gray */
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #1b263b; /* Dark blue */
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            color: #e0e1dd;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .eco-score {
+            background-color: #415a77; /* Medium blue */
+            color: #e0e1dd;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.5em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background-color: #415a77; /* Medium blue */
+            color: #e0e1dd;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.5s;
+        }
+
+        .nav-tab:hover::before {
+            left: 100%;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background-color: #4c6b94;
+        }
+
+        .nav-tab.active {
+            background-color: #2e6a4d; /* Green */
+            color: #e0e1dd;
+        }
+
+        .content-panel {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background-color: #1b263b; /* Dark blue */
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .camera-container {
+            position: relative;
+            margin: 20px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #webcam, #uploadedImage {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 15px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .capture-btn, .upload-btn, .analyze-btn {
+            background-color: #2e6a4d; /* Green */
+            color: #e0e1dd;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .capture-btn::after, .upload-btn::after, .analyze-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .capture-btn:hover::after, .upload-btn:hover::after, .analyze-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .capture-btn:hover, .upload-btn:hover, .analyze-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(46, 106, 77, 0.4);
+            background-color: #3a7d5c;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #415a77; /* Medium blue */
+            border-radius: 15px;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .waste-category {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 5px;
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .recyclable { background-color: #2e6a4d; color: #e0e1dd; } /* Green */
+        .compost { background-color: #4c7a5c; color: #e0e1dd; } /* Light green */
+        .landfill { background-color: #6b705c; color: #e0e1dd; } /* Olive */
+        .hazardous { background-color: #9a031e; color: #e0e1dd; } /* Dark red (kept for safety) */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background-color: #415a77; /* Medium blue */
+            color: #e0e1dd;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            margin: 10px 0;
+            animation: countUp 1s ease;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .challenge-item {
+            background-color: #415a77; /* Medium blue */
+            color: #e0e1dd;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .challenge-item:hover {
+            transform: translateX(10px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #2e6a4d; /* Green */
+            border-radius: 15px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e1dd;
+        }
+
+        .achievement {
+            display: inline-block;
+            background-color: #778da9; /* Light blue */
+            color: #0d1b2a;
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin: 5px;
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .eco-tip {
+            background-color: #415a77; /* Medium blue */
+            color: #e0e1dd;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 1.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .rank {
+            font-size: 1.5em;
+            margin-right: 20px;
+            color: #e0e1dd;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #2e6a4d; /* Green */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .recommendation-card {
+            background-color: #415a77; /* Medium blue */
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            color: #e0e1dd;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .nav-tab {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>
+                EcoVision 
+                <span class="eco-score">Eco Score: <span id="ecoScore">0</span></span>
+            </h1>
+            <p>For sustainable living and waste reduction</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="waste">Waste Classifier</button>
+            <a href="carbontracker.html" class="nav-tab">Carbon Tracker</a>
+            <a href="ecochallenges.html" class="nav-tab">Eco Challenges</a>
+            <a href="impactdashboard.html" class="nav-tab">Impact Dashboard</a>
+            <a href="community.html" class="nav-tab">Community</a>
+        </div>
+
+        <!-- Waste Classifier Panel -->
+        <div id="waste" class="content-panel active">
+            <div class="card">
+                <h2>Waste Classification</h2>
+                <p>Take a photo or upload an image of waste to get instant classification and disposal instructions.</p>
+                
+                <div class="camera-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <img id="uploadedImage" style="display:none;" />
+                    <canvas id="canvas" style="display:none;"></canvas>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="capture-btn" onclick="captureImage()">Capture Image</button>
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Upload Image</button>
+                    <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+                    <button class="analyze-btn" onclick="analyzeWaste()" style="display:none;" id="analyzeBtn">Analyze Waste</button>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing image with AI...</p>
+                </div>
+                
+                <div class="result-container" id="wasteResult">
+                    <h3>Classification Result:</h3>
+                    <div id="classificationResult"></div>
+                    <div id="disposalInstructions"></div>
+                    <div id="alternativeSuggestions"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Classifications</h3>
+                <div id="recentClassifications"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let model;
+        let ecoScore = 0;
+        let classifications = [];
+        let carbonData = {
+            daily: [],
+            weekly: [],
+            monthly: []
+        };
+
+        // Initialize the app
+        async function initApp() {
+            // Load TensorFlow model
+            try {
+                model = await mobilenet.load();
+                console.log('AI Model loaded successfully');
+            } catch (error) {
+                console.error('Error loading model:', error);
+                // Fallback to mock classification if model fails to load
+                console.log('Using mock classification as fallback');
+            }
+
+            // Initialize camera
+            initCamera();
+            
+            // Load saved data
+            loadUserData();
+            
+            // Update displays
+            updateEcoScore();
+            
+            // Set up tab switching
+            setupTabSwitching();
+        }
+
+        // Set up tab switching functionality
+        function setupTabSwitching() {
+            const tabs = document.querySelectorAll('.nav-tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all content panels
+                    document.querySelectorAll('.content-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    
+                    // Show the selected content panel
+                    const tabName = this.getAttribute('data-tab');
+                    if (tabName) {
+                        document.getElementById(tabName).classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // Camera initialization
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                const video = document.getElementById('webcam');
+                video.srcObject = stream;
+            } catch (error) {
+                console.log('Camera not available:', error);
+                // Show a placeholder message
+                const cameraContainer = document.querySelector('.camera-container');
+                cameraContainer.innerHTML = '<p style="color: white; padding: 20px; text-align: center;">Camera access is required for waste classification. Please enable camera permissions.</p>';
+            }
+        }
+
+        // Capture image from webcam
+        function captureImage() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            // Show captured image
+            const img = document.getElementById('uploadedImage');
+            img.src = canvas.toDataURL();
+            img.style.display = 'block';
+            video.style.display = 'none';
+            
+            // Show analyze button
+            document.getElementById('analyzeBtn').style.display = 'inline-block';
+        }
+
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('uploadedImage');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('webcam').style.display = 'none';
+                    document.getElementById('analyzeBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Analyze waste with AI
+        async function analyzeWaste() {
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('wasteResult');
+            
+            loading.classList.add('show');
+            
+            try {
+                const img = document.getElementById('uploadedImage');
+                
+                // Get AI predictions
+                let predictions;
+                if (model) {
+                    predictions = await model.classify(img);
+                } else {
+                    // Mock predictions if model failed to load
+                    predictions = [
+                        { className: 'plastic bottle', probability: 0.92 },
+                        { className: 'water bottle', probability: 0.87 },
+                        { className: 'container', probability: 0.75 }
+                    ];
+                }
+                
+                // Process predictions for waste classification
+                const wasteType = classifyWasteType(predictions);
+                
+                // Update display
+                displayWasteResults(wasteType, predictions);
+                
+                // Save to history
+                saveClassification(wasteType);
+                
+                // Update eco score
+                updateEcoScore(10);
+                
+                loading.classList.remove('show');
+                resultContainer.classList.add('show');
+                
+            } catch (error) {
+                console.error('Error analyzing image:', error);
+                loading.classList.remove('show');
+                
+                // Show error message
+                document.getElementById('classificationResult').innerHTML = 
+                    '<p>Error analyzing image. Please try again.</p>';
+                resultContainer.classList.add('show');
+            }
+        }
+
+        // Classify waste type based on AI predictions
+        function classifyWasteType(predictions) {
+            const item = predictions[0]?.className?.toLowerCase() || '';
+            
+            // Advanced waste classification logic
+            const wasteCategories = {
+                recyclable: ['bottle', 'can', 'paper', 'cardboard', 'plastic', 'container', 'package', 'box', 'newspaper', 'magazine'],
+                compost: ['banana', 'apple', 'orange', 'food', 'vegetable', 'fruit', 'plant', 'flower', 'grass', 'leaves'],
+                electronic: ['computer', 'phone', 'laptop', 'keyboard', 'mouse', 'screen', 'monitor', 'cellular', 'ipod'],
+                hazardous: ['battery', 'medicine', 'chemical', 'paint', 'oil', 'lighter'],
+                landfill: ['diaper', 'tissue', 'napkin', 'foam', 'rubber', 'ceramic']
+            };
+            
+            for (const [category, keywords] of Object.entries(wasteCategories)) {
+                if (keywords.some(keyword => item.includes(keyword))) {
+                    return category;
+                }
+            }
+            
+            return 'landfill'; // Default category
+        }
+
+        // Display waste classification results
+        function displayWasteResults(wasteType, predictions) {
+            const resultDiv = document.getElementById('classificationResult');
+            const instructionsDiv = document.getElementById('disposalInstructions');
+            const suggestionsDiv = document.getElementById('alternativeSuggestions');
+            
+            // Classification badges
+            const badges = {
+                recyclable: '<span class="waste-category recyclable">Recyclable</span>',
+                compost: '<span class="waste-category compost">Compostable</span>',
+                electronic: '<span class="waste-category hazardous">E-Waste</span>',
+                hazardous: '<span class="waste-category hazardous">Hazardous</span>',
+                landfill: '<span class="waste-category landfill">Landfill</span>'
+            };
+            
+            // Disposal instructions
+            const instructions = {
+                recyclable: 'Clean and place in the blue recycling bin. Remove any food residue and flatten if possible.',
+                compost: 'Place in the green compost bin or add to your home composting system.',
+                electronic: 'Take to an e-waste recycling center. Many electronics stores offer free e-waste recycling.',
+                hazardous: 'Take to a hazardous waste collection facility. Never put in regular trash.',
+                landfill: 'Place in the black landfill bin. Consider if there are any reusable parts first.'
+            };
+            
+            // Eco alternatives
+            const alternatives = {
+                recyclable: 'Consider reusable alternatives to reduce packaging waste.',
+                compost: 'Start a home compost bin for your food scraps to create nutrient-rich soil.',
+                electronic: 'Repair or donate electronics before recycling. Many devices can be refurbished.',
+                hazardous: 'Look for non-toxic alternatives to hazardous household products.',
+                landfill: 'Try to reduce consumption of single-use items that end up in landfill.'
+            };
+            
+            // Update the UI
+            resultDiv.innerHTML = `
+                <p>Detected: ${predictions[0]?.className || 'Unknown item'}</p>
+                <p>Waste Category: ${badges[wasteType] || badges.landfill}</p>
+                <p>Confidence: ${(predictions[0]?.probability * 100).toFixed(2) || 'Unknown'}%</p>
+            `;
+            
+            instructionsDiv.innerHTML = `
+                <h4>Disposal Instructions:</h4>
+                <p>${instructions[wasteType] || instructions.landfill}</p>
+            `;
+            
+            suggestionsDiv.innerHTML = `
+                <h4>Eco-Friendly Alternatives:</h4>
+                <p>${alternatives[wasteType] || alternatives.landfill}</p>
+            `;
+        }
+
+        // Save classification to history
+        function saveClassification(wasteType) {
+            const item = document.getElementById('uploadedImage').src;
+            const timestamp = new Date().toLocaleString();
+            
+            classifications.unshift({
+                type: wasteType,
+                image: item,
+                timestamp: timestamp
+            });
+            
+            // Update recent classifications
+            updateRecentClassifications();
+            
+            // Save to localStorage
+            localStorage.setItem('classifications', JSON.stringify(classifications));
+        }
+
+        // Update recent classifications display
+        function updateRecentClassifications() {
+            const container = document.getElementById('recentClassifications');
+            const recent = classifications.slice(0, 5);
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p>No recent classifications yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = recent.map(item => `
+                <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #415a77; border-radius: 10px;">
+                    <img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                    <div>
+                        <p>${item.type.toUpperCase()}</p>
+                        <p style="font-size: 0.8em; color: #e0e1dd;">${item.timestamp}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update eco score
+        function updateEcoScore(points = 0) {
+            ecoScore += points;
+            document.getElementById('ecoScore').textContent = ecoScore;
+            
+            // Save to localStorage
+            localStorage.setItem('ecoScore', ecoScore);
+        }
+
+        // Load user data from localStorage
+        function loadUserData() {
+            // Load eco score
+            const savedEcoScore = localStorage.getItem('ecoScore');
+            if (savedEcoScore) {
+                ecoScore = parseInt(savedEcoScore);
+                document.getElementById('ecoScore').textContent = ecoScore;
+            }
+            
+            // Load classifications
+            const savedClassifications = localStorage.getItem('classifications');
+            if (savedClassifications) {
+                classifications = JSON.parse(savedClassifications);
+                updateRecentClassifications();
+            }
+        }
+
+        // Initialize the app when the page loads
+        window.onload = initApp;
+    </script>
+</body>
+</html>
 
