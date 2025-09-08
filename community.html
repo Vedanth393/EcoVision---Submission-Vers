@@ -1,1 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - EcoVision AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);
+            min-height: 100vh;
+            color: #e0e1dd;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(27, 38, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.5s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header h1 {
+            color: #e0e1dd;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4cc9f0, #2e6a4d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(76, 201, 240, 0.3);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: rgba(65, 90, 119, 0.7);
+            color: #e0e1dd;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(76, 107, 148, 0.8);
+        }
+
+        .nav-tab.active {
+            background: rgba(46, 106, 77, 0.8);
+            box-shadow: 0 0 15px rgba(46, 106, 77, 0.5);
+        }
+
+        .card {
+            background: rgba(27, 38, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(65, 90, 119, 0.3);
+            border-radius: 10px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .leaderboard-item:hover {
+            background: rgba(65, 90, 119, 0.5);
+            transform: translateX(5px);
+        }
+
+        .leaderboard-item.user {
+            background: linear-gradient(135deg, rgba(46, 106, 77, 0.3), rgba(65, 90, 119, 0.3));
+            border: 2px solid #2e6a4d;
+            box-shadow: 0 0 15px rgba(46, 106, 77, 0.3);
+        }
+
+        .rank {
+            font-size: 1.5em;
+            margin-right: 20px;
+            color: #e0e1dd;
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .rank.gold { 
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        .rank.silver { 
+            color: #C0C0C0;
+            text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+        }
+        .rank.bronze { 
+            color: #CD7F32;
+            text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(65, 90, 119, 0.5), rgba(46, 106, 77, 0.7));
+            color: #e0e1dd;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            margin: 10px 0;
+            animation: countUp 1s ease;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .eco-tip {
+            background: linear-gradient(135deg, rgba(65, 90, 119, 0.5), rgba(27, 38, 59, 0.5));
+            color: #e0e1dd;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 1.1em;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid #2e6a4d;
+            backdrop-filter: blur(5px);
+        }
+
+        .eco-tip::before {
+            content: '💡';
+            font-size: 3em;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.2;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2e6a4d, #415a77);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-stats {
+            flex: 1;
+        }
+
+        .medal {
+            font-size: 1.5em;
+            margin-left: 10px;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+        }
+
+        .community-event {
+            background: linear-gradient(135deg, rgba(46, 106, 77, 0.2), rgba(65, 90, 119, 0.2));
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            border: 1px solid #2e6a4d;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .community-event:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-date {
+            color: #4cc9f0;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .join-event-btn {
+            background: linear-gradient(135deg, #2e6a4d, #3a7d5c);
+            color: #e0e1dd;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .join-event-btn:hover {
+            background: linear-gradient(135deg, #3a7d5c, #2e6a4d);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(46, 106, 77, 0.4);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2e6a4d, #4cc9f0);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #e0e1dd;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #2e6a4d, #4cc9f0);
+            border-radius: 3px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #778da9;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>Community Hub</h1>
+            <p>Connect with eco-warriors around the world</p>
+        </div>
+
+        <div class="nav-tabs">
+            <a href="index.html" class="nav-tab">Waste Classifier</a>
+            <a href="carbontracker.html" class="nav-tab">Carbon Tracker</a>
+            <a href="ecochallenges.html" class="nav-tab">Eco Challenges</a>
+            <a href="impactdashboard.html" class="nav-tab">Impact Dashboard</a>
+            <a href="community.html" class="nav-tab active">Community</a>
+        </div>
+
+        <div class="card">
+            <h2>Your Impact Leaderboard</h2>
+            
+            <div class="leaderboard-item user">
+                <span class="rank">1</span>
+                <div class="user-profile">
+                    <div class="avatar"></div>
+                    <div class="user-stats">
+                        <strong>You</strong>
+                        <p><span id="userPoints">0</span> points • <span id="userCO2Saved">0</span> kg CO₂ saved</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="userProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                <span class="medal">⭐</span>
+            </div>
+            
+            <div class="empty-state">
+                <p>You're the first in your community! Invite friends to join the leaderboard.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Community Impact</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total CO₂ Saved</h3>
+                    <div class="stat-number" id="totalCO2Saved">0</div>
+                    <p>kg this year</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Users</h3>
+                    <div class="stat-number" id="activeUsers">1</div>
+                    <p>in your community</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Items Recycled</h3>
+                    <div class="stat-number" id="itemsRecycled">0</div>
+                    <p>this month</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Challenges Completed</h3>
+                    <div class="stat-number" id="challengesCompleted">0</div>
+                    <p>by the community</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Upcoming Community Events</h2>
+            
+            <div class="community-event">
+                <div class="event-date" id="event1Date"></div>
+                <h3>Neighborhood Cleanup Day</h3>
+                <p>Join your local community for a cleanup event at the park. Gloves and bags provided!</p>
+                <button class="join-event-btn">Join Event</button>
+            </div>
+            
+            <div class="community-event">
+                <div class="event-date" id="event2Date"></div>
+                <h3>Zero Waste Run Challenge</h3>
+                <p>Combine fitness with environmental awareness. Collect litter while you run!</p>
+                <button class="join-event-btn">Join Event</button>
+            </div>
+            
+            <div class="community-event">
+                <div class="event-date" id="event3Date"></div>
+                <h3>Sustainable Living Workshop</h3>
+                <p>Learn practical tips for reducing your carbon footprint in everyday life.</p>
+                <button class="join-event-btn">Register Now</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Daily Eco Tips</h2>
+            
+            <div class="eco-tip">
+                <strong>Today's Tip:</strong> Replace single-use plastic bags with reusable ones. 
+                This simple switch can prevent 500+ plastic bags from entering landfills yearly!
+            </div>
+            
+            <div class="eco-tip">
+                <strong>Did You Know?</strong> Recycling one aluminum can saves enough energy 
+                to power a TV for 3 hours. Start collecting cans today!
+            </div>
+            
+            <div class="eco-tip">
+                <strong>Quick Win:</strong> Turn off lights when leaving a room. 
+                This can save up to 10% on your electricity bill and reduce CO₂ emissions.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get data from both Carbon Tracker and Eco Challenges
+        function getCombinedData() {
+            let totalCO2Saved = 0;
+            let totalPoints = 0;
+            let itemsRecycled = 0;
+            let challengesCompleted = 0;
+            
+            // Get data from Carbon Tracker
+            const carbonData = localStorage.getItem('carbonFootprintData');
+            if (carbonData) {
+                try {
+                    const carbon = JSON.parse(carbonData);
+                    if (carbon.entries) {
+                        Object.values(carbon.entries).forEach(entry => {
+                            // Calculate savings compared to average (14kg/day)
+                            const dailySavings = Math.max(0, 14 - entry.total);
+                            totalCO2Saved += dailySavings;
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing carbon data:', e);
+                }
+            }
+            
+            // Get data from Eco Challenges
+            const ecoData = localStorage.getItem('ecoUserData_v1');
+            if (ecoData) {
+                try {
+                    const eco = JSON.parse(ecoData);
+                    
+                    // Add CO2 savings from challenges
+                    if (eco.impact && eco.impact.co2) {
+                        totalCO2Saved += eco.impact.co2;
+                    }
+                    
+                    // Get points
+                    if (eco.points) {
+                        totalPoints = eco.points;
+                    }
+                    
+                    // Get recycled items count
+                    if (eco.challenges && eco.challenges.recycling && eco.challenges.recycling.current) {
+                        itemsRecycled = eco.challenges.recycling.current;
+                    }
+                    
+                    // Count completed challenges
+                    if (eco.challenges) {
+                        challengesCompleted = Object.values(eco.challenges).filter(
+                            challenge => challenge.completed
+                        ).length;
+                    }
+                } catch (e) {
+                    console.error('Error parsing eco challenges data:', e);
+                }
+            }
+            
+            // Subtract 0.9 kg from the total CO2 saved for the leaderboard
+            const adjustedCO2Saved = Math.max(0, totalCO2Saved - 0.9);
+            
+            return {
+                totalCO2Saved: adjustedCO2Saved,
+                totalPoints,
+                itemsRecycled,
+                challengesCompleted
+            };
+        }
+
+        // Update leaderboard with combined data
+        function updateLeaderboard() {
+            const data = getCombinedData();
+            
+            // Update user stats
+            document.getElementById('userCO2Saved').textContent = data.totalCO2Saved.toFixed(1);
+            document.getElementById('userPoints').textContent = data.totalPoints;
+            
+            // Update progress bar (scale: 0-100kg for visual representation)
+            const progressPercent = Math.min(100, (data.totalCO2Saved / 100) * 100);
+            document.getElementById('userProgress').style.width = `${progressPercent}%`;
+            
+            // Update community stats
+            document.getElementById('totalCO2Saved').textContent = data.totalCO2Saved.toFixed(1);
+            document.getElementById('itemsRecycled').textContent = data.itemsRecycled;
+            document.getElementById('challengesCompleted').textContent = data.challengesCompleted;
+        }
+
+        // Set up event dates for the next 3 weeks
+        function setupEventDates() {
+            const today = new Date();
+            const event1Date = new Date(today);
+            const event2Date = new Date(today);
+            const event3Date = new Date(today);
+            
+            // Set events for the next three Saturdays
+            event1Date.setDate(today.getDate() + (6 - today.getDay() + 7) % 7);
+            event2Date.setDate(event1Date.getDate() + 7);
+            event3Date.setDate(event2Date.getDate() + 7);
+            
+            // Format dates
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('event1Date').textContent = event1Date.toLocaleDateString('en-US', options);
+            document.getElementById('event2Date').textContent = event2Date.toLocaleDateString('en-US', options);
+            document.getElementById('event3Date').textContent = event3Date.toLocaleDateString('en-US', options);
+        }
+
+        // Add event listeners for join buttons
+        document.querySelectorAll('.join-event-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                alert('Event joined! You will receive more details via email.');
+                this.textContent = 'Joined!';
+                this.style.background = 'linear-gradient(135deg, #778da9, #415a77)';
+                this.disabled = true;
+            });
+        });
+
+        // Initialize page
+        window.onload = function() {
+            // Animate numbers on load
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.animation = 'countUp 1s ease forwards';
+                }, index * 100);
+            });
+            
+            // Update leaderboard with real data
+            updateLeaderboard();
+            
+            // Set up event dates
+            setupEventDates();
+            
+            // Refresh data every minute
+            setInterval(updateLeaderboard, 60000);
+        };
+    </script>
+</body>
+</html>
