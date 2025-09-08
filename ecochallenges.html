@@ -1,1 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eco Challenges - EcoVision</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background-color: #0d1b2a;
+      min-height: 100vh;
+      color: #e0e1dd;
+      line-height: 1.6;
+    }
+    
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background-color: #1b263b;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+      animation: slideDown .5s ease;
+      text-align: center;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header h1 {
+      color: #e0e1dd;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: .9;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .nav-tab {
+      background-color: #415a77;
+      color: #e0e1dd;
+      border: 0;
+      padding: 14px 28px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all .3s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 500;
+    }
+    
+    .nav-tab:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+      background-color: #4c6b94;
+    }
+    
+    .nav-tab.active {
+      background-color: #2e6a4d;
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 25px;
+    }
+    
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    
+    .card {
+      background-color: #1b263b;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+      animation: fadeIn .5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #e0e1dd;
+      border-bottom: 2px solid #2e6a4d;
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .time-remaining {
+      font-size: .9rem;
+      opacity: .8;
+      font-weight: normal;
+    }
+    
+    .challenge-item {
+      background-color: #415a77;
+      color: #e0e1dd;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 15px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all .3s ease;
+      animation: slideIn .5s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .challenge-item:hover {
+      transform: translateX(5px);
+      background-color: #4c6b94;
+    }
+    
+    .challenge-content {
+      flex: 1;
+    }
+    
+    .challenge-content h3 {
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .challenge-content p {
+      font-size: .95rem;
+      opacity: .9;
+      margin-bottom: 12px;
+    }
+    
+    .progress-container {
+      margin-top: 10px;
+    }
+    
+    .progress-label {
+      font-size: .85rem;
+      margin-bottom: 6px;
+      opacity: .85;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, .2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #2e6a4d;
+      border-radius: 10px;
+      transition: width .6s ease;
+    }
+    
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: .85rem;
+      opacity: .8;
+    }
+    
+    .challenge-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-left: 20px;
+    }
+    
+    .points-badge {
+      font-size: 1.15rem;
+      color: #e9c46a;
+      font-weight: 700;
+    }
+    
+    .join-btn {
+      background-color: #2e6a4d;
+      color: #e0e1dd;
+      border: 0;
+      padding: 10px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all .3s ease;
+      font-weight: 500;
+      min-width: 120px;
+    }
+    
+    .join-btn:hover {
+      transform: scale(1.05);
+      background-color: #3a7d5c;
+    }
+    
+    .join-btn:disabled {
+      background-color: #2b3a55;
+      cursor: not-allowed;
+      transform: none;
+      opacity: .6;
+    }
+    
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .achievement {
+      background-color: #415a77;
+      color: #e0e1dd;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      transition: all .3s ease;
+      cursor: pointer;
+    }
+    
+    .achievement:hover {
+      transform: translateY(-5px);
+      background-color: #4c6b94;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, .2);
+    }
+    
+    .achievement h4 {
+      font-size: 1rem;
+      margin: 10px 0 5px;
+      font-weight: 600;
+    }
+    
+    .achievement p {
+      font-size: .85rem;
+      opacity: .8;
+    }
+    
+    .achievement-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    
+    .achievement.locked {
+      opacity: .55;
+      filter: grayscale(1);
+    }
+    
+    .achievement.unlocked {
+      animation: shine 2s infinite;
+      border: 2px solid #2e6a4d;
+    }
+    
+    @keyframes shine {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(46, 106, 77, .5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(46, 106, 77, .8);
+      }
+    }
+    
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    
+    .user-stats {
+      text-align: center;
+    }
+    
+    .user-score {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #2e6a4d;
+      margin: 10px 0;
+    }
+    
+    .user-level {
+      display: inline-block;
+      background-color: #415a77;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: .9rem;
+      margin-top: 10px;
+    }
+    
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+    
+    .stat-value {
+      font-weight: 700;
+      color: #e9c46a;
+    }
+    
+    .special-challenge {
+      background: linear-gradient(135deg, #2e6a4d, #415a77);
+      padding: 25px;
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+    
+    .special-challenge h3 {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #e0e1dd;
+    }
+    
+    .special-challenge p {
+      margin-bottom: 15px;
+      opacity: .9;
+    }
+    
+    .chart-container {
+      margin-top: 30px;
+      height: 320px;
+      position: relative;
+    }
+    
+    .export-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .export-btn, .reset-btn {
+      background-color: #415a77;
+      color: #e0e1dd;
+      border: 0;
+      padding: 12px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all .3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    
+    .export-btn:hover, .reset-btn:hover {
+      background-color: #4c6b94;
+      transform: translateY(-2px);
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(13, 27, 42, .9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .modal-content {
+      background-color: #1b263b;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, .3);
+      animation: modalFadeIn .25s ease;
+    }
+    
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #2e6a4d;
+      padding-bottom: 15px;
+      }
+      
+      .modal-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      }
+      
+      .close-modal {
+      background: none;
+      border: 0;
+      color: #e0e1dd;
+      font-size: 1.5rem;
+      cursor: pointer;
+      }
+      
+      .modal-body {
+      margin-bottom: 20px;
+      }
+      
+      .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      }
+      
+      .btn {
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all .3s ease;
+      }
+      
+      .btn-primary {
+      background-color: #2e6a4d;
+      color: #e0e1dd;
+      }
+      
+      .btn-primary:hover {
+      background-color: #3a7d5c;
+      }
+      
+      .btn-secondary {
+      background-color: #415a77;
+      color: #e0e1dd;
+      }
+      
+      .btn-secondary:hover {
+      background-color: #4c6b94;
+      }
+      
+      .challenge-category {
+      display: inline-block;
+      background-color: #2e6a4d;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: .8rem;
+      margin-bottom: 10px;
+      }
+      
+      .impact-stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      text-align: center;
+      }
+      
+      .impact-stat {
+      padding: 15px;
+      }
+      
+      .impact-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #e9c46a;
+      margin: 5px 0;
+      }
+      
+      .impact-label {
+      font-size: .9rem;
+      opacity: .85;
+      }
+      
+      @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-tabs {
+        flex-direction: column;
+      }
+      .nav-tab {
+        width: 100%;
+        text-align: center;
+      }}
+  </style>
+</head>
+<body>
+  <div class="app-container" id="app">
+    <div class="header">
+      <h1>Eco Challenges</h1>
+      <p>Complete challenges to earn points, track your environmental impact, and compete with friends to save the planet!</p>
+    </div>
 
+    <div class="nav-tabs">
+      <a href="index.html" class="nav-tab">Waste Classifier</a>
+      <a href="carbontracker.html" class="nav-tab">Carbon Tracker</a>
+      <a href="ecochallenges.html" class="nav-tab active">Eco Challenges</a>
+      <a href="impactdashboard.html" class="nav-tab">Impact Dashboard</a>
+      <a href="community.html" class="nav-tab">Community</a>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="main-content">
+        <div class="card">
+          <h2>
+            Weekly Challenges
+            <span class="time-remaining" id="weekly-time-remaining"></span>
+          </h2>
+
+          <div class="challenge-item">
+            <div class="challenge-content">
+              <span class="challenge-category">Transportation</span>
+              <h3>Car-Free Week</h3>
+              <p>Use only sustainable transportation for 7 days. Walking, cycling, and public transport all count!</p>
+              <div class="progress-container">
+                <div class="progress-label"><span>Started: <span id="transport-start">-</span></span><span id="transport-days">0/7 days</span></div>
+                <div class="progress-bar" aria-label="Transport progress" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0">
+                  <div class="progress-fill" id="transport-progress" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="challenge-actions">
+              <span class="points-badge">+50 pts</span>
+              <button class="join-btn" id="btn-transport" onclick="update_progress('transport', 1)">Log Day</button>
+            </div>
+          </div>
+
+          <div class="challenge-item">
+            <div class="challenge-content">
+              <span class="challenge-category">Waste Reduction</span>
+              <h3>Recycling Master</h3>
+              <p>Correctly sort 20 items using our waste classifier. Help reduce contamination in recycling streams!</p>
+              <div class="progress-container">
+                <div class="progress-label"><span>Items sorted</span><span id="recycling-items">0/20 items</span></div>
+                <div class="progress-bar" aria-label="Recycling progress" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
+                  <div class="progress-fill" id="recycling-progress" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="challenge-actions">
+              <span class="points-badge">+30 pts</span>
+              <button class="join-btn" id="btn-recycling" onclick="update_progress('recycling', 1)">Add Item</button>
+            </div>
+          </div>
+
+          <div class="challenge-item">
+            <div class="challenge-content">
+              <span class="challenge-category">Energy</span>
+              <h3>Energy Saver</h3>
+              <p>Reduce your energy usage by 20% this week. Turn off lights, unplug devices, and use energy-efficient appliances.</p>
+              <div class="progress-container">
+                <div class="progress-label"><span>Current reduction</span><span id="energy-percent">0%/20%</span></div>
+                <div class="progress-bar" aria-label="Energy reduction" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
+                  <div class="progress-fill" id="energy-progress" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="challenge-actions">
+              <span class="points-badge">+40 pts</span>
+              <button class="join-btn" id="btn-energy" onclick="show_energy_modal()">Log Savings</button>
+            </div>
+          </div>
+
+          <div class="challenge-item">
+            <div class="challenge-content">
+              <span class="challenge-category">Conservation</span>
+              <h3>Plant a Tree</h3>
+              <p>Contribute to reforestation by planting a tree or donating to a verified tree-planting organization.</p>
+              <div class="progress-container">
+                <div class="progress-label"><span>Planted</span><span id="tree-count">0/1 trees</span></div>
+                <div class="progress-bar" aria-label="Trees" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+                  <div class="progress-fill" id="tree-progress" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="challenge-actions">
+              <span class="points-badge">+100 pts</span>
+              <button class="join-btn" id="btn-tree" onclick="update_progress('tree', 1)">Log Tree</button>
+            </div>
+          </div>
+
+          <div class="challenge-item">
+            <div class="challenge-content">
+              <span class="challenge-category">Water</span>
+              <h3>Water Conservation</h3>
+              <p>Save 100 gallons of water this week by taking shorter showers, fixing leaks, and using water-efficient fixtures.</p>
+              <div class="progress-container">
+                <div class="progress-label"><span>Saved</span><span id="water-gallons">0/100 gallons</span></div>
+                <div class="progress-bar" aria-label="Water saved" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div class="progress-fill" id="water-progress" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="challenge-actions">
+              <span class="points-badge">+60 pts</span>
+              <button class="join-btn" id="btn-water" onclick="show_water_modal()">Log Savings</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>
+            Monthly Special Challenge
+            <span class="time-remaining" id="monthly-time-remaining"></span>
+          </h2>
+          <div class="special-challenge">
+            <h3>Climate Action Hero</h3>
+            <p>Complete all weekly challenges this month to earn this exclusive badge and maximize your environmental impact!</p>
+            <div class="progress-container">
+              <div class="progress-label"><span>Time remaining</span><span id="monthly-days-left">-</span></div>
+              <div class="progress-bar" aria-label="Monthly completion" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
+                <div class="progress-fill" style="width:0%;background:#e9c46a" id="monthly-progress"></div>
+              </div>
+              <div class="progress-text"><span></span><span id="monthly-challenges">0/5 challenges</span></div>
+            </div>
+            <button class="join-btn" style="margin-top:15px;" onclick="show_monthly_challenge()">View Details</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Your Environmental Impact</h2>
+          <div class="chart-container">
+            <canvas id="savings-chart"></canvas>
+          </div>
+          <div class="export-row">
+            <button class="export-btn" onclick="export_progress_pdf()">Export Progress Report</button>
+            <button class="reset-btn" onclick="reset_all()">Reset All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card user-stats">
+          <h2>Your Eco Profile</h2>
+          <div class="user-score" id="total-points">0</div>
+          <div>Total Points</div>
+          <div class="user-level" id="user-level">Eco Beginner • Level 1</div>
+
+          <div class="impact-stats">
+            <div class="impact-stat">
+              <div class="impact-value" id="co2-saved">0</div>
+              <div class="impact-label">kg CO₂ Saved</div>
+            </div>
+            <div class="impact-stat">
+              <div class="impact-value" id="trees-planted">0</div>
+              <div class="impact-label">Trees Planted</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Your Achievements</h2>
+          <div class="achievements-grid">
+            <div class="achievement locked" data-ach="First Recycler" onclick="show_achievement('First Recycler')">
+              <div class="achievement-icon"></div>
+              <h4>First Recycler</h4>
+              <p>Recycled your first item</p>
+            </div>
+            <div class="achievement locked" data-ach="Week Warrior" onclick="show_achievement('Week Warrior')">
+              <div class="achievement-icon"></div>
+              <h4>Week Warrior</h4>
+              <p>Completed a weekly challenge</p>
+            </div>
+            <div class="achievement locked" data-ach="Earth Protector" onclick="show_achievement('Earth Protector')">
+              <div class="achievement-icon"></div>
+              <h4>Earth Protector</h4>
+              <p>Saved 50kg of CO₂</p>
+            </div>
+            <div class="achievement locked" data-ach="Waste Reducer" onclick="show_achievement('Waste Reducer')">
+              <div class="achievement-icon"></div>
+              <h4>Waste Reducer</h4>
+              <p>Recycled 100 items</p>
+            </div>
+            <div class="achievement locked" data-ach="Carbon Cutter" onclick="show_achievement('Carbon Cutter')">
+              <div class="achievement-icon"></div>
+              <h4>Carbon Cutter</h4>
+              <p>Reduced usage by 20%</p>
+            </div>
+            <div class="achievement locked" data-ach="Tree Hugger" onclick="show_achievement('Tree Hugger')">
+              <div class="achievement-icon"></div>
+              <h4>Tree Hugger</h4>
+              <p>Planted 10 trees</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="energy-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Log Energy Savings</h2>
+        <button class="close-modal" onclick="close_modal('energy-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>How much energy did you save today?</p>
+        <div style="margin:20px 0;">
+          <input type="range" min="1" max="20" value="5" class="slider" id="energy-slider" style="width:100%"/>
+          <div style="text-align:center;margin-top:10px;"><span id="energy-value">5</span>% reduction</div>
+        </div>
+        <p>Your current energy reduction progress: <span id="current-energy">0</span>%</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="close_modal('energy-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="apply_energy()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="water-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Log Water Savings</h2>
+        <button class="close-modal" onclick="close_modal('water-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>How many gallons of water did you save today?</p>
+        <div style="margin:20px 0;">
+          <input type="number" id="water-input" min="1" max="50" value="5" style="width:100%;padding:10px;border-radius:8px;background:#415a77;border:none;color:#e0e1dd;"/>
+        </div>
+        <p>Your current water savings: <span id="current-water">0</span> gallons</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="close_modal('water-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="apply_water()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="achievement-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="achievement-title">Achievement</h2>
+        <button class="close-modal" onclick="close_modal('achievement-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align:center;font-size:3rem;margin:20px 0;" id="achievement-icon"></div>
+        <p id="achievement-description">Description of the achievement</p>
+        <div id="achievement-status" style="margin-top:20px;padding:10px;background:#415a77;border-radius:8px;text-align:center;">Status: Locked</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="close_modal('achievement-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const storage_key='ecoUserData_v1';
+    const impact_factors={transportPerDayCO2:2.5,recyclingPerItemCO2:0.2,energyPerPercentCO2:1.0,treeCO2:21.0};
+
+    const default_user=()=>({points:0,level:1,challenges:{transport:{current:0,target:7,points:50,startDate:null,completed:false},recycling:{current:0,target:20,points:30,startDate:null,completed:false},energy:{current:0,target:20,points:40,startDate:null,completed:false},tree:{current:0,target:1,points:100,startDate:null,completed:false},water:{current:0,target:100,points:60,startDate:null,completed:false}},impact:{co2:0,trees:0,water:0},achievements:{'First Recycler':{unlocked:false},'Week Warrior':{unlocked:false},'Earth Protector':{unlocked:false},'Waste Reducer':{unlocked:false},'Carbon Cutter':{unlocked:false},'Tree Hugger':{unlocked:false}},history:{weekly:[],monthly:[]},lastWeeklyReset:null,lastMonthlyReset:null});
+
+    let user=default_user();
+    let savings_chart=null;
+
+    function load_user(){
+      try{
+        const raw=localStorage.getItem(storage_key);
+        if(raw){const parsed=JSON.parse(raw);user=Object.assign(default_user(),parsed);}
+      }catch(e){console.warn('failed to parse user data, resetting.',e);user=default_user();}
+    }
+    function save_user(){localStorage.setItem(storage_key,JSON.stringify(user));}
+    function reset_all(){
+      if(!confirm('Reset all progress, points, and history?'))return;
+      user=default_user();
+      save_user();
+      update_ui_all();
+    }
+
+    function now_in_tz(tz){return new Date(new Date().toLocaleString('en-US',{timeZone:tz}));}
+    function setup_reset(){
+      const est_now=now_in_tz('America/New_York');
+      const last_weekly=user.lastWeeklyReset?new Date(user.lastWeeklyReset):new Date(0);
+      const is_sun=est_now.getDay()===0;
+      if(is_sun&&last_weekly.toDateString()!==est_now.toDateString()){
+        save_weekly();
+        reset_weekly();
+        user.lastWeeklyReset=est_now.toISOString();
+        save_user();
+      }
+      const last_monthly=user.lastMonthlyReset?new Date(user.lastMonthlyReset):new Date(0);
+      const last_dom=new Date(est_now.getFullYear(),est_now.getMonth()+1,0).getDate();
+      if(est_now.getDate()===last_dom&&(last_monthly.getMonth()!==est_now.getMonth()||last_monthly.getFullYear()!==est_now.getFullYear())){
+        save_monthly();
+        reset_monthly();
+        user.lastMonthlyReset=est_now.toISOString();
+        save_user();
+      }
+    }
+    function reset_weekly(){
+      for(const k of ['transport','recycling','energy','tree','water']){user.challenges[k].current=0;user.challenges[k].startDate=null;user.challenges[k].completed=false;}
+    }
+    function reset_monthly(){user.history.monthly=[];}
+    function save_weekly(){
+      user.history.weekly.push({date:new Date().toISOString(),challenges:Object.fromEntries(Object.entries(user.challenges).map(([k,v])=>[k,v.current])),points:user.points,impact:{...user.impact}});
+    }
+    function save_monthly(){
+      const done=Object.values(user.challenges).filter(c=>c.current>=c.target).length;
+      user.history.monthly.push({date:new Date().toISOString(),challengesCompleted:done,points:user.points,impact:{...user.impact}});
+    }
+
+    function time_left_weekly(){
+      const n=now_in_tz('America/New_York');
+      const days=((7-n.getDay())%7);
+      const t=new Date(n);t.setDate(n.getDate()+days);t.setHours(23,59,59,999);
+      const ms=t-n;const d=Math.floor(ms/(1000*60*60*24));const h=Math.floor((ms/(1000*60*60))%24);
+      return `${d}d ${h}h left`;
+    }
+    function time_left_monthly(){
+      const n=now_in_tz('America/New_York');
+      const end=new Date(n.getFullYear(),n.getMonth()+1,0,23,59,59,999);
+      const ms=end-n;const d=Math.max(0,Math.ceil(ms/(1000*60*60*24)));
+      return{label:`${d} days left`,days:d};
+    }
+    function update_time_left(){
+      const w=document.getElementById('weekly-time-remaining');
+      const m=document.getElementById('monthly-time-remaining');
+      const md=document.getElementById('monthly-days-left');
+      if(w)w.textContent=time_left_weekly();
+      if(m&&md){const fm=time_left_monthly();m.textContent=fm.label;md.textContent=fm.days;}
+    }
+
+    function init_chart(){
+      const ctx=document.getElementById('savings-chart');
+      if(!ctx)return;
+      savings_chart=new Chart(ctx,{type:'bar',data:{labels:['Transport','Recycling','Energy','Water','Tree'],datasets:[{label:'Completion %',data:get_challenge_percents()}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,suggestedMax:100,ticks:{stepSize:20}}},plugins:{legend:{display:false}}}});
+    }
+    function refresh_chart(){if(!savings_chart)return;savings_chart.data.datasets[0].data=get_challenge_percents();savings_chart.update();}
+    function get_challenge_percents(){const c=user.challenges;return[c.transport,c.recycling,c.energy,c.water,c.tree].map(x=>Math.min(100,Math.round((x.current/x.target)*100)));}
+
+    function update_start_date(ch){const id=`${ch}-start`;const el=document.getElementById(id);if(!el)return;el.textContent=user.challenges[ch].startDate?new Date(user.challenges[ch].startDate).toLocaleDateString():'-';}
+    function set_btn_disabled(ch,disabled){const btn=document.getElementById(`btn-${ch}`);if(btn)btn.disabled=!!disabled;}
+
+    function update_challenge_ui(ch){
+      const cfg=user.challenges[ch];
+      const fill=document.getElementById(`${ch}-progress`);
+      const bar=fill?.parentElement;
+      const pct=Math.min(100,(cfg.current/cfg.target)*100);
+      if(fill)fill.style.width=`${pct}%`;
+      if(bar)bar.setAttribute('aria-valuenow',String(cfg.current));
+      if(ch==='transport'){const t=document.getElementById('transport-days');if(t)t.textContent=`${cfg.current}/${cfg.target} days`;}
+      else if(ch==='recycling'){const r=document.getElementById('recycling-items');if(r)r.textContent=`${cfg.current}/${cfg.target} items`;}
+      else if(ch==='energy'){const e=document.getElementById('energy-percent');if(e)e.textContent=`${cfg.current}%/${cfg.target}%`;}
+      else if(ch==='water'){const w=document.getElementById('water-gallons');if(w)w.textContent=`${cfg.current}/${cfg.target} gallons`;const cw=document.getElementById('current-water');if(cw)cw.textContent=`${cfg.current}`;}
+      else if(ch==='tree'){const tt=document.getElementById('tree-count');if(tt)tt.textContent=`${cfg.current}/${cfg.target} trees`;}
+      update_start_date(ch);
+      set_btn_disabled(ch,!!cfg.completed);
+    }
+
+    function update_bars(){['transport','recycling','energy','tree','water'].forEach(update_challenge_ui);refresh_chart();}
+
+    function update_impact(ch,delta){
+      if(ch==='transport'){user.impact.co2+=delta*impact_factors.transportPerDayCO2;}
+      else if(ch==='recycling'){user.impact.co2+=delta*impact_factors.recyclingPerItemCO2;}
+      else if(ch==='energy'){user.impact.co2+=delta*impact_factors.energyPerPercentCO2;}
+      else if(ch==='tree'){user.impact.trees+=delta;user.impact.co2+=delta*impact_factors.treeCO2;}
+      else if(ch==='water'){user.impact.water+=delta;}
+    }
+
+    function update_impact_stats(){const co2=document.getElementById('co2-saved');const trees=document.getElementById('trees-planted');if(co2)co2.textContent=Math.max(0,user.impact.co2).toFixed(1);if(trees)trees.textContent=user.impact.trees;}
+
+    function update_points_level(){
+      const total=document.getElementById('total-points');
+      const lvl=document.getElementById('user-level');
+      if(total)total.textContent=user.points;
+      const level=1+Math.floor(user.points/200);
+      user.level=Math.max(level,1);
+      if(lvl)lvl.textContent=`Eco Beginner • Level ${user.level}`;
+    }
+
+    function check_achievements(){
+      const c=user.challenges;
+      if(c.recycling.current>=1)user.achievements['First Recycler'].unlocked=true;
+      if(Object.values(c).some(x=>x.completed))user.achievements['Week Warrior'].unlocked=true;
+      if(user.impact.co2>=50)user.achievements['Earth Protector'].unlocked=true;
+      if(c.recycling.current>=100)user.achievements['Waste Reducer'].unlocked=true;
+      if(c.energy.current>=20)user.achievements['Carbon Cutter'].unlocked=true;
+      if(user.impact.trees>=10)user.achievements['Tree Hugger'].unlocked=true;
+      update_ach_ui();
+    }
+    function update_ach_ui(){
+      document.querySelectorAll('.achievement').forEach(card=>{
+        const name=card.getAttribute('data-ach');
+        const data=user.achievements[name];
+        if(!data)return;
+        card.classList.toggle('unlocked',!!data.unlocked);
+        card.classList.toggle('locked',!data.unlocked);
+      });
+    }
+
+    function show_achievement(name){
+      const unlocked=user.achievements[name]?.unlocked;
+      const modal=document.getElementById('achievement-modal');
+      document.getElementById('achievement-title').textContent=name;
+      document.getElementById('achievement-description').textContent=unlocked?'Unlocked — great job!':'Keep going to unlock this achievement.';
+      document.getElementById('achievement-status').textContent=`Status: ${unlocked?'Unlocked':'Locked'}`;
+      open_modal('achievement-modal');
+    }
+
+    function open_modal(id){const m=document.getElementById(id);if(m)m.style.display='flex';}
+    function close_modal(id){const m=document.getElementById(id);if(m)m.style.display='none';}
+    function show_energy_modal(){
+      document.getElementById('current-energy').textContent=user.challenges.energy.current;
+      const slider=document.getElementById('energy-slider');
+      const val=document.getElementById('energy-value');
+      if(slider&&val){slider.value=5;val.textContent='5';slider.oninput=e=>{val.textContent=e.target.value;};}
+      open_modal('energy-modal');
+    }
+    function apply_energy(){
+      const value=parseInt(document.getElementById('energy-value').textContent,10)||0;
+      update_progress('energy',value);
+      close_modal('energy-modal');
+    }
+    function show_water_modal(){
+      document.getElementById('current-water').textContent=user.challenges.water.current;
+      const input=document.getElementById('water-input');
+      if(input)input.value=5;
+      open_modal('water-modal');
+    }
+    function apply_water(){
+      const val=parseInt(document.getElementById('water-input').value,10)||0;
+      update_progress('water',val);
+      close_modal('water-modal');
+    }
+    function show_monthly_challenge(){alert('Complete all 5 weekly challenges this month to unlock the Climate Action Hero badge!');}
+
+    function update_progress(challenge,value){
+      const ch=user.challenges[challenge];
+      if(!ch)return;
+      if(ch.current===0&&!ch.startDate){ch.startDate=new Date().toISOString();}
+      if(challenge==='energy'){ch.current=Math.min(ch.target,ch.current+value);}else{ch.current=Math.max(0,ch.current+value);}
+      if(!ch.completed&&ch.current>=ch.target){ch.completed=true;user.points+=ch.points;}
+      update_impact(challenge,value);
+      check_achievements();
+      update_ui_all();
+      save_user();
+    }
+
+    function update_ui_all(){update_bars();update_impact_stats();update_points_level();update_time_left();}
+
+    async function export_progress_pdf(){
+      const{jsPDF}=window.jspdf||{};
+      if(!jsPDF)return alert('jsPDF not loaded');
+      const el=document.getElementById('app');
+      const canvas=await html2canvas(el,{backgroundColor:'#0d1b2a',scale:2});
+      const img=canvas.toDataURL('image/png');
+      const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+      const w=pdf.internal.pageSize.getWidth();
+      const h=pdf.internal.pageSize.getHeight();
+      const img_w=w-40;
+      const img_h=(canvas.height*img_w)/canvas.width;
+      pdf.addImage(img,'PNG',20,20,img_w,Math.min(img_h,h-40));
+      pdf.save('eco-progress.pdf');
+    }
+
+    function init_page(){
+      setup_reset();
+      load_user();
+      init_chart();
+      update_ui_all();
+      setInterval(save_user,60000);
+      setInterval(update_time_left,60000);
+    }
+
+    document.addEventListener('DOMContentLoaded',init_page);
+  </script>
+</body>
+</html>
